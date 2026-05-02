@@ -1,0 +1,33 @@
+#!/bin/bash
+
+DOTFILES_DIR="$HOME/dotfiles"
+BACKUP_DIR="$HOME/backups/$(date +%Y%m%d_%H%M%S)"
+FILES_TO_MANAGE=(".tmux.conf" ".bashrc" ".vimrc")
+
+# Create directories
+mkdir -p "$DOTFILES_DIR"
+mkdir -p "$BACKUP_DIR"
+
+for file in "${FILES_TO_MANAGE[@]}"; do
+    target_name="${file#.}"
+    src="$HOME/$file"
+    dst="$DOTFILES_DIR/$target_name"
+
+    # 1. Back up existing file to prevent data loss
+    if [[ -f "$src" || -L "$src" ]]; then
+        echo "Backing up $file to $BACKUP_DIR"
+        mv "$src" "$BACKUP_DIR/"
+    fi
+
+    # 2. Move file to dotfiles if it's not already there
+    if [[ -f "$BACKUP_DIR/$file" ]]; then
+        cp "$BACKUP_DIR/$file" "$dst"
+        echo "Moved $file to $DOTFILES_DIR"
+    fi
+
+    # 3. Create the symlink
+    if [[ ! -L "$src" ]]; then
+        echo "Linking $src -> $dst"
+        ln -s "$dst" "$src"
+    fi
+done
