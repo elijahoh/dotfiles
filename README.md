@@ -45,7 +45,7 @@ You can expand this later with additional config directories such as `git/`, `nv
 Clone the repository into your home directory:
 
 ```bash
-git clone git@github.com:elijahoh/dotfiles.git ~/dotfiles
+git clone https://github.com/elijahoh/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 ```
 
