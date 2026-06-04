@@ -45,7 +45,7 @@ You can expand this later with additional config directories such as `git/`, `nv
 Clone the repository into your home directory:
 
 ```bash
-git clone https://github.com/elijahoh/dotfiles.git ~/dotfiles
+git clone git@github.com:elijahoh/dotfiles.git ~/dotfiles
 cd ~/dotfiles
 ```
 
@@ -93,7 +93,3 @@ Example:
 - `~/.config` is mainly for modern XDG-style applications; traditional files like `.bashrc` and `.vimrc` are still usually read from `$HOME` unless explicitly reconfigured.
 - Using `$HOME` in scripts is usually safer than `~` because it behaves more predictably in quoted strings and scripted paths.
 - Keep the setup script idempotent where possible so rerunning it does not destroy existing backups or create broken links.
-
-## License
-
-MIT © @elijahoh
