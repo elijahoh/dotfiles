@@ -56,7 +56,7 @@ eval "$(mise activate bash)"
 
 # Custom Tmux Python Development Profile
 tp() {
-  local session_name="py-dev"
+  local session_name="dev"
 
   # 1. Start a new detached tmux session (-d) named 'py-dev'
   tmux new-session -d -s "$session_name"
@@ -75,3 +75,70 @@ tp() {
   # 5. Attach to your newly created workspace
   tmux attach-session -t "$session_name"
 }
+
+cs50() {
+  local session_name="cs50p"
+  local target_dir="$HOME/lab/cs50p"
+
+  # 0. Safety Check: If the session already exists, just attach to it
+  # instead of trying to create a duplicate error.
+  if tmux has-session -t "$session_name" 2>/dev/null; then
+    tmux attach-session -t "$session_name"
+    return
+  fi
+
+  # 1. Start a new detached tmux session named 'cs50p'
+  # The '-c' flag forces the shell to initialize INSIDE your cs50p directory.
+  # This is what triggers mise to auto-load your Python 3.13 .venv!
+  tmux new-session -d -s "$session_name" -c "$target_dir"
+
+  # 2. Launch Neovim targeting the root folder '.'
+  # This ensures LazyVim/Neo-tree starts at the project root for your LSP.
+  tmux send-keys -t "$session_name" 'nvim .' C-m
+
+  # 3. Split the screen horizontally.
+  # We use '-c' again so your lower terminal pane also instantly loads the venv.
+  tmux split-window -d -v -p 25 -t "$session_name" -c "$target_dir"
+
+  # 4. Move keyboard focus back up to the big Neovim pane (pane 0)
+  tmux select-pane -t "$session_name".0
+
+  # 5. Attach to your newly created workspace
+  tmux attach-session -t "$session_name"
+}
+
+dev() {
+  local session_name="dev"
+  local target_dir="${1:-$PWD}"
+
+  # 0. Safety Check: If session exists, attach immediately
+  if tmux has-session -t "$session_name" 2>/dev/null; then
+    tmux attach-session -t "$session_name"
+    return
+  fi
+
+  # 1. Create session and launch LazyVim with Neo-tree explicitly opened
+  local left_pane
+  left_pane=$(tmux new-session -d -s "$session_name" -c "$target_dir" -P -F "#{pane_id}")
+  tmux send-keys -t "$left_pane" 'nvim -c "Neotree show"' C-m
+
+  # 2. Split horizontally: -p 30 gives 30% width to Right, leaving 70% for Left (LazyVim)
+  local right_top_pane
+  right_top_pane=$(tmux split-window -h -p 30 -t "$left_pane" -c "$target_dir" -P -F "#{pane_id}")
+
+  # Launch Aider with your OpenRouter Claude Sonnet model
+  tmux send-keys -t "$right_top_pane" 'aider --model openrouter/~anthropic/claude-sonnet-latest' C-m
+
+  # 3. Split Top-Right pane vertically to create Bottom-Right CLI Pane (30% height)
+  local right_bottom_pane
+  right_bottom_pane=$(tmux split-window -v -p 30 -t "$right_top_pane" -c "$target_dir" -P -F "#{pane_id}")
+
+  # 4. Focus back on Left Pane (LazyVim)
+  tmux select-pane -t "$left_pane"
+
+  # 5. Attach to session
+  tmux attach-session -t "$session_name"
+}
+
+# Created by `pipx` on 2026-06-19 06:17:19
+export PATH="$PATH:/home/eo/.local/bin"
