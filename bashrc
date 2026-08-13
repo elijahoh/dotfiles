@@ -117,24 +117,22 @@ dev() {
     return
   fi
 
-  # 1. Create session and launch LazyVim with Neo-tree explicitly opened
-  local left_pane
-  left_pane=$(tmux new-session -d -s "$session_name" -c "$target_dir" -P -F "#{pane_id}")
-  tmux send-keys -t "$left_pane" 'nvim -c "Neotree show"' C-m
+  # 1. Create session and launch Neovim in Top-Left Pane
+  local left_top_pane
+  left_top_pane=$(tmux new-session -d -s "$session_name" -c "$target_dir" -P -F "#{pane_id}")
+  tmux send-keys -t "$left_top_pane" 'nvim -c "Neotree show"' C-m
 
-  # 2. Split horizontally: -p 30 gives 30% width to Right, leaving 70% for Left (LazyVim)
-  local right_top_pane
-  right_top_pane=$(tmux split-window -h -p 30 -t "$left_pane" -c "$target_dir" -P -F "#{pane_id}")
+  # 2. Split horizontally (40% for Right Pane / Aider)
+  local right_pane
+  right_pane=$(tmux split-window -h -p 10 -t "$left_top_pane" -c "$target_dir" -P -F "#{pane_id}")
+  tmux send-keys -t "$right_pane" 'aider --model openrouter/anthropic/claude-sonnet-latest' C-m
 
-  # Launch Aider with your OpenRouter Claude Sonnet model
-  tmux send-keys -t "$right_top_pane" 'aider --model openrouter/~anthropic/claude-sonnet-latest' C-m
+  # 3. Split Left Pane vertically for Bottom CLI (25% height)
+  local left_bottom_pane
+  left_bottom_pane=$(tmux split-window -v -p 25 -t "$left_top_pane" -c "$target_dir" -P -F "#{pane_id}")
 
-  # 3. Split Top-Right pane vertically to create Bottom-Right CLI Pane (30% height)
-  local right_bottom_pane
-  right_bottom_pane=$(tmux split-window -v -p 30 -t "$right_top_pane" -c "$target_dir" -P -F "#{pane_id}")
-
-  # 4. Focus back on Left Pane (LazyVim)
-  tmux select-pane -t "$left_pane"
+  # 4. Return focus back to Top-Left Pane (Neovim)
+  tmux select-pane -t "$left_top_pane"
 
   # 5. Attach to session
   tmux attach-session -t "$session_name"
