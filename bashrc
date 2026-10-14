@@ -37,7 +37,7 @@ PROMPT_COMMAND=set_bash_prompt
 
 # Tooling Integrations
 eval "$(mise activate bash)"
-export PATH="$PATH:/home/eo/.local/bin"
+[[ ":$PATH:" != *":$HOME/.local/bin:"* ]] && export PATH="$PATH:$HOME/.local/bin"
 
 # Source workspace functions and project shortcuts
 if [ -f ~/.bash_aliases ]; then
@@ -47,4 +47,18 @@ fi
 ### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
 export PATH="/home/eo/.rd/bin:$PATH"
 ### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)
-export PATH="$HOME/.rd/bin:$PATH"
+
+# Clean duplicate directories from PATH
+export PATH="$(echo "$PATH" | awk -v RS=: -v ORS=: '!seen[$0]++' | sed 's/:$//')"
+
+# Kubectl completion & alias
+if command -v kubectl &>/dev/null; then
+  # Load system bash completion if not already initialized
+  if ! declare -F _init_completion &>/dev/null; then
+    [ -r /usr/share/bash-completion/bash_completion ] && source /usr/share/bash-completion/bash_completion
+  fi
+
+  source <(kubectl completion bash)
+  alias k='kubectl'
+  complete -o default -F __start_kubectl k
+fi
