@@ -43,3 +43,8 @@ export PATH="$PATH:/home/eo/.local/bin"
 if [ -f ~/.bash_aliases ]; then
   . ~/.bash_aliases
 fi
+
+### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
+export PATH="/home/eo/.rd/bin:$PATH"
+### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)
+export PATH="$HOME/.rd/bin:$PATH"
