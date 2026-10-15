@@ -1,10 +1,9 @@
 # If not running interactively, don't do anything
 [[ $- != *i* ]] && return
 
-# Basic aliases
-alias ls='ls --color=auto'
-alias grep='grep --color=auto'
-alias vim='nvim'
+# Environment Variables
+export EDITOR="nvim"
+export KUBE_EDITOR="nvim"
 
 # Git Prompt Setup
 set_bash_prompt() {
@@ -39,26 +38,28 @@ PROMPT_COMMAND=set_bash_prompt
 eval "$(mise activate bash)"
 [[ ":$PATH:" != *":$HOME/.local/bin:"* ]] && export PATH="$PATH:$HOME/.local/bin"
 
-# Source workspace functions and project shortcuts
-if [ -f ~/.bash_aliases ]; then
-  . ~/.bash_aliases
-fi
-
 ### MANAGED BY RANCHER DESKTOP START (DO NOT EDIT)
+
 export PATH="/home/eo/.rd/bin:$PATH"
 ### MANAGED BY RANCHER DESKTOP END (DO NOT EDIT)
 
 # Clean duplicate directories from PATH
 export PATH="$(echo "$PATH" | awk -v RS=: -v ORS=: '!seen[$0]++' | sed 's/:$//')"
 
-# Kubectl completion & alias
+# Kubectl completion
+
 if command -v kubectl &>/dev/null; then
   # Load system bash completion if not already initialized
   if ! declare -F _init_completion &>/dev/null; then
+
     [ -r /usr/share/bash-completion/bash_completion ] && source /usr/share/bash-completion/bash_completion
   fi
 
   source <(kubectl completion bash)
-  alias k='kubectl'
   complete -o default -F __start_kubectl k
+fi
+
+# Source workspace functions and project shortcuts
+if [ -f ~/.bash_aliases ]; then
+  source ~/.bash_aliases
 fi
